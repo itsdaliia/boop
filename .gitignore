@@ -1,0 +1,33 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.sln.iml
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+*.dll
+*.exe
+*.pdb
+
+# NuGet
+packages/
+*.nupkg
+
+# User-specific files
+*.suo
+*.user
+*.userprefs
+.DS_Store
+
+# Test results
+TestResults/
+*.trx
