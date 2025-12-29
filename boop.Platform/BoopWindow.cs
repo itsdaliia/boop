@@ -1,3 +1,6 @@
+// Copyright (c) itsdaliia <me@daliia.ch>. Licensed under the MIT Licence.
+// See the LICENSE file in the repository root for full licence.
+
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
