@@ -9,27 +9,65 @@ using Key = boop.Core.Input.Key;
 namespace boop.Platform;
 
 public class InputManager : IInputHandler, ITextInput {
+    private readonly HashSet<Key> _keysHeld = [];
+    private readonly Dictionary<Key, double> _keyTimers = new();
+    private const float RepeatDelay = 0.5f;
+    private const float RepeatRate = 0.05f;
+    
     public event Action<Key>? OnKeyDown;
+    public event Action<Key>? OnKeyUp;
     public event Action<char>? OnCharTyped;
 
     public void Init(IWindow window) {
         var input = window.CreateInput();
         foreach (var k in input.Keyboards) {
-            k.KeyDown += (_, key, _) => {
-                OnKeyDown?.Invoke(ConvertKey(key));
-            };
+            k.KeyDown += (_, key, _) => KeyDown(ConvertKey(key));
+            k.KeyUp += (_, key, _) => KeyUp(ConvertKey(key));            
             
             k.KeyChar += (_, chr) => {
                 OnCharTyped?.Invoke(chr);
             };
         }
     }
-    
-    private Key ConvertKey(Silk.NET.Input.Key key) {
-        if (Enum.TryParse<Key>(key.ToString(), out var converted)) {
-            return converted;
+
+    public void Update(double deltaTime) {
+        foreach (var key in _keysHeld.ToArray()) {
+            _keyTimers[key] += deltaTime;
+
+            if (!(_keyTimers[key] >= RepeatDelay)) continue;
+            
+            ProcessKey(key);
+            _keyTimers[key] -= RepeatRate;
         }
+    }
+    
+    private void KeyDown(Key key) {
+        if (!_keysHeld.Add(key)) return;
         
-        return Key.Unknown;
+        _keyTimers[key] = 0f;
+        ProcessKey(key);
+    }
+
+    private void KeyUp(Key key) {
+        _keysHeld.Remove(key);
+        _keyTimers.Remove(key);
+    }
+    
+    private void ProcessKey(Key key) {
+        OnKeyDown?.Invoke(key);
+
+        char? c = key switch {
+            Key.Backspace => '\b',
+            Key.Enter     => '\n',
+            Key.Tab       => '\t',
+            _ => null
+        };
+
+        if (c.HasValue)
+            OnCharTyped?.Invoke(c.Value);
+    }    
+    
+    private static Key ConvertKey(Silk.NET.Input.Key key) {
+        return Enum.TryParse<Key>(key.ToString(), out var converted) ? converted : Key.Unknown;
     }
 }

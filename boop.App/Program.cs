@@ -25,6 +25,7 @@ public static class Program {
 
         window.OnUpdate(delta => {
             editor.Update(delta);
+            inputManager.Update(delta);
         });
 
         window.OnRender(delta => {

@@ -8,11 +8,14 @@ using boop.Core.Input;
 namespace boop.Core;
 
 public class Editor {
-    private readonly StringBuilder _buffer = new();
+    private readonly List<StringBuilder> _lines = [new()];
+    
+    private int _cursorLine;
+    private int _cursorColumn;
     
     public Editor(IInputHandler input, ITextInput textInput) {
         input.OnKeyDown += HandleInput;
-        textInput.OnCharTyped += HandleText;
+        textInput.OnCharTyped += HandleChar;
     }
 
     public void Update(double deltaTime) {
@@ -23,27 +26,56 @@ public class Editor {
         // background
         renderer.Clear(new Color(30, 30, 40));
         
-        // title
-        renderer.DrawText("boop!", 100, 100, 48, Color.White);
-        
-        // subtitle
-        renderer.DrawText("a text editor that wants to be better", 100, 150, 16, new Color(150, 150, 150));
-        
-        // some test rectangles
-        renderer.DrawRoundRect(100, 200, 400, 100, 8, new Color(50, 50, 70), filled: true);
-        renderer.DrawText(_buffer.Length == 0 ? "This is where text will go..." : _buffer.ToString(), 120, 250, 20, new Color(200, 200, 200));
-    }
+        const float x = 100;
+        const float lineHeight = 24; 
+        float y = 100;
 
-    private void HandleInput(Key key) {
-        Console.WriteLine("Input: " + key);
-        if (key == Key.Backspace) {
-            if (_buffer.Length > 0)
-                _buffer.Length--;
+        for (var i = 0; i < _lines.Count; i++) {
+            renderer.DrawText($"{i + 1} {_lines[i]}", x, y, 20, Color.White);
+            y += lineHeight;
         }
     }
+
+    private static void HandleInput(Key key) {
+        Console.WriteLine("Input: " + key);
+    }
     
-    private void HandleText(char chr) {
-        Console.WriteLine("Char: " + chr);
-        _buffer.Append(chr);
+    private void HandleChar(char c) {
+        switch (c) {
+            case '\b' when _cursorColumn > 0:
+                _lines[_cursorLine].Remove(_cursorColumn - 1, 1);
+                _cursorColumn--;
+                break;
+            case '\b': {
+                if (_cursorLine > 0) {
+                    int prevLength = _lines[_cursorLine - 1].Length;
+                    _lines[_cursorLine - 1].Append(_lines[_cursorLine]);
+                    _lines.RemoveAt(_cursorLine);
+                    _cursorLine--;
+                    _cursorColumn = prevLength;
+                }
+
+                break;
+            }
+            case '\n': {
+                var newLine = new StringBuilder();
+                var current = _lines[_cursorLine];
+            
+                if (_cursorColumn < current.Length) {
+                    newLine.Append(current.ToString(_cursorColumn, current.Length - _cursorColumn));
+                    current.Remove(_cursorColumn, current.Length - _cursorColumn);
+                }
+            
+                _lines.Insert(_cursorLine + 1, newLine);
+                _cursorLine++;
+                _cursorColumn = 0;
+                
+                break;
+            }
+            default:
+                _lines[_cursorLine].Insert(_cursorColumn, c);
+                _cursorColumn++;
+                break;
+        }
     }
 }
