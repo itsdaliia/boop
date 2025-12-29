@@ -1,12 +1,15 @@
-using boop.Rendering;
+using System.Text;
+using boop.Core.Graphics;
+using boop.Core.Input;
 
 namespace boop.Core;
 
 public class Editor {
-    private int _frameCount = 0;
-
-    public Editor() {
-        // todo: init editor state
+    private readonly StringBuilder _buffer = new();
+    
+    public Editor(IInputHandler input, ITextInput textInput) {
+        input.OnKeyDown += HandleInput;
+        textInput.OnCharTyped += HandleText;
     }
 
     public void Update(double deltaTime) {
@@ -14,8 +17,6 @@ public class Editor {
     }
 
     public void Render(IRenderer renderer) {
-        _frameCount++;
-        
         // background
         renderer.Clear(new Color(30, 30, 40));
         
@@ -27,10 +28,19 @@ public class Editor {
         
         // some test rectangles
         renderer.DrawRoundRect(100, 200, 400, 100, 8, new Color(50, 50, 70), filled: true);
-        renderer.DrawText("This is where text will go...", 120, 250, 20, new Color(200, 200, 200));
+        renderer.DrawText(_buffer.Length == 0 ? "This is where text will go..." : _buffer.ToString(), 120, 250, 20, new Color(200, 200, 200));
     }
 
-    public void HandleInput() {
-        // todo: handle keyboard/mouse
+    private void HandleInput(Key key) {
+        Console.WriteLine("Input: " + key);
+        if (key == Key.Backspace) {
+            if (_buffer.Length > 0)
+                _buffer.Length--;
+        }
+    }
+    
+    private void HandleText(char chr) {
+        Console.WriteLine("Char: " + chr);
+        _buffer.Append(chr);
     }
 }

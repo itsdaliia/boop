@@ -10,6 +10,7 @@
     <ItemGroup>
       <ProjectReference Include="..\boop.Core\boop.Core.csproj" />
       <ProjectReference Include="..\boop.Platform\boop.Platform.csproj" />
+      <ProjectReference Include="..\boop.Rendering\boop.Rendering.csproj" />
     </ItemGroup>
 
 </Project>

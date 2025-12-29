@@ -1,4 +1,4 @@
-namespace boop.Rendering;
+namespace boop.Core.Graphics;
 
 public interface IRenderer {
     void BeginFrame();

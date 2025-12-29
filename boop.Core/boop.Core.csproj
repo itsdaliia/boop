@@ -6,8 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\boop.Rendering\boop.Rendering.csproj" />
-    </ItemGroup>
-
 </Project>

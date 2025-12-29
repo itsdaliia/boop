@@ -1,3 +1,4 @@
+using boop.Core.Graphics;
 using SkiaSharp;
 
 namespace boop.Rendering;
@@ -8,8 +9,8 @@ public class SkiaRenderer : IRenderer, IDisposable {
     private SKSurface? _surface;
     private int _width;
     private int _height;
-    
-    public SKCanvas? Canvas => _surface?.Canvas;
+
+    private SKCanvas? Canvas => _surface?.Canvas;
 
     public void Init(int width, int height) {
         _width = width;
