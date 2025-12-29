@@ -7,4 +7,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\boop.Core\boop.Core.csproj" />
+      <ProjectReference Include="..\boop.Platform\boop.Platform.csproj" />
+    </ItemGroup>
+
 </Project>
