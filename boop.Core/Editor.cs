@@ -32,10 +32,24 @@ public class Editor {
 
         textInput.OnCharTyped += HandleChar;
         terminalSession.CommandInterceptor += cmd => {
-            if (cmd.StartsWith(":open ", StringComparison.OrdinalIgnoreCase)) {
+            if (cmd.StartsWith(":open", StringComparison.OrdinalIgnoreCase)) {
                 string path = cmd.Substring(":open ".Length);
-                OpenFile(path);
-                _terminalBuffer.Print($"[boop] opened {path}");
+                if (OpenFile(path)) {
+                    _terminalBuffer.Print($"[boop] opened {path}");
+                }
+
+                return true;
+            }
+
+            if (cmd.StartsWith(":close", StringComparison.OrdinalIgnoreCase)) {
+                _terminalBuffer.Print($"[boop] closed {_currentFilePath}");
+                _currentFilePath = null;
+
+                _lines.Clear();
+                _lines.Add(new StringBuilder());
+
+                _cursorLine = 0;
+                _cursorColumn = 0;
                 return true;
             }
 
@@ -98,12 +112,20 @@ public class Editor {
         }
     }
 
-    private void OpenFile(string path) {
+    private bool OpenFile(string path) {
         _lines.Clear();
         _cursorLine = 0;
         _cursorColumn = 0;
-        _lines.AddRange(File.ReadAllLines(path).Select(line => new StringBuilder(line)));
-        _currentFilePath = path;
+
+        try {
+            string[] lines = File.ReadAllLines(path);
+            _lines.AddRange(lines.Select(line => new StringBuilder(line)));
+            _currentFilePath = path;
+            return true;
+        } catch (Exception e) {
+            _terminalBuffer.Print("[boop] failed to open file: " + e.Message);
+            return false;
+        }
     }
 
     private void HandleInput(Key key) {
