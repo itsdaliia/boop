@@ -1,4 +1,4 @@
-﻿// Copyright (c) itsdaliia <me@daliia.ch>. Licensed under the MIT Licence.
+// Copyright (c) itsdaliia <me@daliia.ch>. Licensed under the MIT Licence.
 // See the LICENSE file in the repository root for full licence.
 
 using boop.Core;
@@ -36,13 +36,9 @@ public static class Program {
             renderer.EndFrame();
         });
 
-        window.OnResize(size => {
-            renderer.Resize(size.X, size.Y);
-        });
+        window.OnResize(size => renderer.Resize(size.X, size.Y));
 
-        window.OnClose(() => {
-            renderer.Dispose();
-        });
+        window.OnClose(() => renderer.Dispose());
 
         window.Run();
     }

@@ -56,9 +56,7 @@ public class Editor {
             return false;
         };
 
-        terminalSession.OnOutput += line => {
-            _terminalBuffer.Print(line);
-        };
+        terminalSession.OnOutput += line => _terminalBuffer.Print(line);
 
         _terminalSession = terminalSession;
     }
@@ -100,7 +98,7 @@ public class Editor {
         );
 
         if (_terminalVisible) {
-            renderer.DrawRect(0, renderer.Height - 300, renderer.Width, 300, new Color(0,0,0,180));
+            renderer.DrawRect(0, renderer.Height - 300, renderer.Width, 300, new Color(0, 0, 0, 180));
 
             float yt = renderer.Height - 280;
             foreach (string line in _terminalBuffer.Lines) {
@@ -198,31 +196,31 @@ public class Editor {
                 _cursorColumn--;
                 break;
             case '\b': {
-                if (_cursorLine > 0) {
-                    int prevLength = _lines[_cursorLine - 1].Length;
-                    _lines[_cursorLine - 1].Append(_lines[_cursorLine]);
-                    _lines.RemoveAt(_cursorLine);
-                    _cursorLine--;
-                    _cursorColumn = prevLength;
-                }
+                    if (_cursorLine > 0) {
+                        int prevLength = _lines[_cursorLine - 1].Length;
+                        _lines[_cursorLine - 1].Append(_lines[_cursorLine]);
+                        _lines.RemoveAt(_cursorLine);
+                        _cursorLine--;
+                        _cursorColumn = prevLength;
+                    }
 
-                break;
-            }
+                    break;
+                }
             case '\n': {
-                var newLine = new StringBuilder();
-                StringBuilder current = _lines[_cursorLine];
+                    var newLine = new StringBuilder();
+                    StringBuilder current = _lines[_cursorLine];
 
-                if (_cursorColumn < current.Length) {
-                    newLine.Append(current.ToString(_cursorColumn, current.Length - _cursorColumn));
-                    current.Remove(_cursorColumn, current.Length - _cursorColumn);
+                    if (_cursorColumn < current.Length) {
+                        newLine.Append(current.ToString(_cursorColumn, current.Length - _cursorColumn));
+                        current.Remove(_cursorColumn, current.Length - _cursorColumn);
+                    }
+
+                    _lines.Insert(_cursorLine + 1, newLine);
+                    _cursorLine++;
+                    _cursorColumn = 0;
+
+                    break;
                 }
-
-                _lines.Insert(_cursorLine + 1, newLine);
-                _cursorLine++;
-                _cursorColumn = 0;
-
-                break;
-            }
             default:
                 _lines[_cursorLine].Insert(_cursorColumn, c);
                 _cursorColumn++;

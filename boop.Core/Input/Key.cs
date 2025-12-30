@@ -3,7 +3,7 @@
 
 namespace boop.Core.Input;
 
-public enum Key {    
+public enum Key {
     Unknown = -1,
     Space = 32,
     Apostrophe = 39 /* ' */,
