@@ -11,6 +11,7 @@ public static class Program {
     public static void Main(string[] args) {
         var window = new BoopWindow(1280, 720, "boop!");
         var inputManager = new InputManager();
+        var terminalSession = new TerminalSession();
         var renderer = new SkiaRenderer();
         Editor editor = null!;
 
@@ -19,8 +20,9 @@ public static class Program {
             
             renderer.Init(window.Width, window.Height);
             inputManager.Init(window.GetNativeWindow());
+            terminalSession.Start();
             
-            editor = new Editor(inputManager, inputManager);
+            editor = new Editor(inputManager, inputManager, terminalSession);
         });
 
         window.OnUpdate(delta => {

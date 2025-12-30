@@ -1,6 +1,9 @@
 namespace boop.Core.Graphics;
 
 public interface IRenderer {
+    public float Width { get; }
+    public float Height { get; }
+    
     void BeginFrame();
     void EndFrame();
     void Clear(Color color);

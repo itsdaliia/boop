@@ -15,6 +15,9 @@ public class SkiaRenderer : IRenderer, IDisposable {
 
     private SKCanvas? Canvas => _surface?.Canvas;
 
+    public float Width => _width;
+    public float Height => _height;
+
     public void Init(int width, int height) {
         _width = width;
         _height = height;
