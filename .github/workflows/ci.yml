@@ -40,8 +40,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet restore
-      - run: dotnet build --configuration Release --runtime linux-x64
-      - run: dotnet build --configuration Release --runtime linux-arm64
+      - run: dotnet build --configuration Release
 
   build-windows:
     runs-on: windows-latest
@@ -53,8 +52,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet restore
-      - run: dotnet build --configuration Release --runtime win-x64
-      - run: dotnet build --configuration Release --runtime win-arm64
+      - run: dotnet build --configuration Release
 
   build-macos:
     runs-on: macos-latest
@@ -66,5 +64,4 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet restore
-      - run: dotnet build --configuration Release --runtime osx-x64
-      - run: dotnet build --configuration Release --runtime osx-arm64
+      - run: dotnet build --configuration Release
