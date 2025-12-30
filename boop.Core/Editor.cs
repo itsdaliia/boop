@@ -32,19 +32,31 @@ public class Editor {
 
         textInput.OnCharTyped += HandleChar;
         terminalSession.CommandInterceptor += cmd => {
-            if (cmd.StartsWith(":open ", StringComparison.OrdinalIgnoreCase)) {
+            if (cmd.StartsWith(":open", StringComparison.OrdinalIgnoreCase)) {
                 string path = cmd.Substring(":open ".Length);
-                OpenFile(path);
-                _terminalBuffer.Print($"[boop] opened {path}");
+                if (OpenFile(path)) {
+                    _terminalBuffer.Print($"[boop] opened {path}");
+                }
+
+                return true;
+            }
+
+            if (cmd.StartsWith(":close", StringComparison.OrdinalIgnoreCase)) {
+                _terminalBuffer.Print($"[boop] closed {_currentFilePath}");
+                _currentFilePath = null;
+
+                _lines.Clear();
+                _lines.Add(new StringBuilder());
+
+                _cursorLine = 0;
+                _cursorColumn = 0;
                 return true;
             }
 
             return false;
         };
 
-        terminalSession.OnOutput += line => {
-            _terminalBuffer.Print(line);
-        };
+        terminalSession.OnOutput += line => _terminalBuffer.Print(line);
 
         _terminalSession = terminalSession;
     }
@@ -86,7 +98,7 @@ public class Editor {
         );
 
         if (_terminalVisible) {
-            renderer.DrawRect(0, renderer.Height - 300, renderer.Width, 300, new Color(0,0,0,180));
+            renderer.DrawRect(0, renderer.Height - 300, renderer.Width, 300, new Color(0, 0, 0, 180));
 
             float yt = renderer.Height - 280;
             foreach (string line in _terminalBuffer.Lines) {
@@ -98,12 +110,20 @@ public class Editor {
         }
     }
 
-    private void OpenFile(string path) {
+    private bool OpenFile(string path) {
         _lines.Clear();
         _cursorLine = 0;
         _cursorColumn = 0;
-        _lines.AddRange(File.ReadAllLines(path).Select(line => new StringBuilder(line)));
-        _currentFilePath = path;
+
+        try {
+            string[] lines = File.ReadAllLines(path);
+            _lines.AddRange(lines.Select(line => new StringBuilder(line)));
+            _currentFilePath = path;
+            return true;
+        } catch (Exception e) {
+            _terminalBuffer.Print("[boop] failed to open file: " + e.Message);
+            return false;
+        }
     }
 
     private void HandleInput(Key key) {
@@ -176,31 +196,31 @@ public class Editor {
                 _cursorColumn--;
                 break;
             case '\b': {
-                if (_cursorLine > 0) {
-                    int prevLength = _lines[_cursorLine - 1].Length;
-                    _lines[_cursorLine - 1].Append(_lines[_cursorLine]);
-                    _lines.RemoveAt(_cursorLine);
-                    _cursorLine--;
-                    _cursorColumn = prevLength;
-                }
+                    if (_cursorLine > 0) {
+                        int prevLength = _lines[_cursorLine - 1].Length;
+                        _lines[_cursorLine - 1].Append(_lines[_cursorLine]);
+                        _lines.RemoveAt(_cursorLine);
+                        _cursorLine--;
+                        _cursorColumn = prevLength;
+                    }
 
-                break;
-            }
+                    break;
+                }
             case '\n': {
-                var newLine = new StringBuilder();
-                StringBuilder current = _lines[_cursorLine];
+                    var newLine = new StringBuilder();
+                    StringBuilder current = _lines[_cursorLine];
 
-                if (_cursorColumn < current.Length) {
-                    newLine.Append(current.ToString(_cursorColumn, current.Length - _cursorColumn));
-                    current.Remove(_cursorColumn, current.Length - _cursorColumn);
+                    if (_cursorColumn < current.Length) {
+                        newLine.Append(current.ToString(_cursorColumn, current.Length - _cursorColumn));
+                        current.Remove(_cursorColumn, current.Length - _cursorColumn);
+                    }
+
+                    _lines.Insert(_cursorLine + 1, newLine);
+                    _cursorLine++;
+                    _cursorColumn = 0;
+
+                    break;
                 }
-
-                _lines.Insert(_cursorLine + 1, newLine);
-                _cursorLine++;
-                _cursorColumn = 0;
-
-                break;
-            }
             default:
                 _lines[_cursorLine].Insert(_cursorColumn, c);
                 _cursorColumn++;

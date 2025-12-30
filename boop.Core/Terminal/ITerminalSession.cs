@@ -5,7 +5,7 @@ namespace boop.Core.Terminal;
 
 public interface ITerminalSession {
     public event Action<string>? OnOutput;
-    public event Func<string, bool>? CommandInterceptor; 
-    
+    public event Func<string, bool>? CommandInterceptor;
+
     public void Send(string cmd);
 }

@@ -24,9 +24,7 @@ public class InputManager : IInputHandler, ITextInput {
             k.KeyDown += (_, key, _) => KeyDown(ConvertKey(key));
             k.KeyUp += (_, key, _) => KeyUp(ConvertKey(key));
 
-            k.KeyChar += (_, chr) => {
-                OnCharTyped?.Invoke(chr);
-            };
+            k.KeyChar += (_, chr) => OnCharTyped?.Invoke(chr);
         }
     }
 
@@ -62,8 +60,8 @@ public class InputManager : IInputHandler, ITextInput {
 
         char? c = key switch {
             Key.Backspace => '\b',
-            Key.Enter     => '\n',
-            Key.Tab       => '\t',
+            Key.Enter => '\n',
+            Key.Tab => '\t',
             _ => null
         };
 
