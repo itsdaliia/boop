@@ -51,6 +51,8 @@ public class InputManager : IInputHandler, ITextInput {
     }
 
     private void KeyUp(Key key) {
+        OnKeyUp?.Invoke(key);
+
         _keysHeld.Remove(key);
         _keyTimers.Remove(key);
     }
