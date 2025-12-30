@@ -13,38 +13,39 @@ public class Editor {
     private readonly TerminalBuffer _terminalBuffer = new();
     private readonly ITerminalSession _terminalSession;
 
-    private bool _terminalVisible = false;
+    private bool _terminalVisible;
     private string _terminalInput = "";
-    
+
     private bool _ctrlDown;
     private string? _currentFilePath;
-    
+
     private int _cursorLine;
     private int _cursorColumn;
-    
+
     public Editor(IInputHandler input, ITextInput textInput, ITerminalSession terminalSession) {
         input.OnKeyDown += HandleInput;
         input.OnKeyUp += key => {
-            if (key == Key.ControlLeft || key == Key.ControlRight)
+            if (key is Key.ControlLeft or Key.ControlRight) {
                 _ctrlDown = false;
+            }
         };
-        
+
         textInput.OnCharTyped += HandleChar;
         terminalSession.CommandInterceptor += cmd => {
-            if (cmd.StartsWith(":open ")) {
-                var path = cmd.Substring(":open ".Length);
+            if (cmd.StartsWith(":open ", StringComparison.OrdinalIgnoreCase)) {
+                string path = cmd.Substring(":open ".Length);
                 OpenFile(path);
                 _terminalBuffer.Print($"[boop] opened {path}");
                 return true;
             }
-            
+
             return false;
         };
-        
+
         terminalSession.OnOutput += line => {
             _terminalBuffer.Print(line);
         };
-        
+
         _terminalSession = terminalSession;
     }
 
@@ -55,12 +56,12 @@ public class Editor {
     public void Render(IRenderer renderer) {
         // background
         renderer.Clear(new Color(30, 30, 40));
-        
+
         const float x = 100;
-        const float lineHeight = 24; 
+        const float lineHeight = 24;
         float y = 100;
 
-        for (var i = 0; i < _lines.Count; i++) {
+        for (int i = 0; i < _lines.Count; i++) {
             renderer.DrawText($"{i + 1} {_lines[i]}", x, y, 20, Color.White);
             y += lineHeight;
         }
@@ -69,11 +70,11 @@ public class Editor {
             renderer.DrawRect(0, renderer.Height - 300, renderer.Width, 300, new Color(0,0,0,180));
 
             float yt = renderer.Height - 280;
-            foreach (var line in _terminalBuffer.Lines) {
+            foreach (string line in _terminalBuffer.Lines) {
                 renderer.DrawText(line, 10, yt, 14, Color.White);
                 yt += 16;
             }
-            
+
             renderer.DrawText("> " + _terminalInput, 10, yt, 14, Color.White);
         }
     }
@@ -85,7 +86,7 @@ public class Editor {
         _lines.AddRange(File.ReadAllLines(path).Select(line => new StringBuilder(line)));
         _currentFilePath = path;
     }
-    
+
     private void HandleInput(Key key) {
         Console.WriteLine("Input: " + key);
 
@@ -93,15 +94,14 @@ public class Editor {
             _terminalVisible = !_terminalVisible;
             return;
         }
-        
+
         if (key == Key.ControlLeft || key == Key.ControlRight) {
             _ctrlDown = true;
             return;
         }
-        
+
         if (_ctrlDown && key == Key.S) {
             SaveFile();
-            return;
         }
     }
 
@@ -147,17 +147,17 @@ public class Editor {
             }
             case '\n': {
                 var newLine = new StringBuilder();
-                var current = _lines[_cursorLine];
-            
+                StringBuilder current = _lines[_cursorLine];
+
                 if (_cursorColumn < current.Length) {
                     newLine.Append(current.ToString(_cursorColumn, current.Length - _cursorColumn));
                     current.Remove(_cursorColumn, current.Length - _cursorColumn);
                 }
-            
+
                 _lines.Insert(_cursorLine + 1, newLine);
                 _cursorLine++;
                 _cursorColumn = 0;
-                
+
                 break;
             }
             default:
@@ -170,8 +170,10 @@ public class Editor {
     private void HandleTerminal(char c) {
         switch (c) {
             case '\b':
-                if (_terminalInput.Length > 0)
+                if (_terminalInput.Length > 0) {
                     _terminalInput = _terminalInput[..^1];
+                }
+
                 break;
 
             case '\n':

@@ -6,10 +6,10 @@ using boop.Core.Terminal;
 
 namespace boop.Platform;
 
-public class TerminalSession : ITerminalSession {
+public sealed class TerminalSession : ITerminalSession, IDisposable {
     public event Action<string>? OnOutput;
-    public event Func<string, bool>? CommandInterceptor; 
-    
+    public event Func<string, bool>? CommandInterceptor;
+
     private Process? _process;
 
     public void Start() {
@@ -23,18 +23,19 @@ public class TerminalSession : ITerminalSession {
                 CreateNoWindow = true
             }
         };
-        
+
         _process.OutputDataReceived += (_, args) => {
             if (args.Data != null) {
                 OnOutput?.Invoke(args.Data);
             }
         };
-        
+
         _process.ErrorDataReceived += (_, args) => {
-            if (args.Data != null)
+            if (args.Data != null) {
                 OnOutput?.Invoke("[err] " + args.Data);
+            }
         };
-        
+
         _process.Start();
         _process.BeginOutputReadLine();
         _process.BeginErrorReadLine();
@@ -44,8 +45,13 @@ public class TerminalSession : ITerminalSession {
         if (CommandInterceptor?.Invoke(cmd) == true) {
             return;
         }
-        
+
         _process?.StandardInput.WriteLine(cmd);
         _process?.StandardInput.Flush();
+    }
+
+    public void Dispose() {
+        _process?.Kill();
+        _process?.Dispose();
     }
 }

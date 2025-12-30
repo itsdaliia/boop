@@ -13,7 +13,7 @@ public class BoopWindow {
     private Action<Vector2D<int>>? _onResize;
     private Action? _onLoad;
     private Action? _onClose;
-    
+
     public int Width => _window.Size.X;
     public int Height => _window.Size.Y;
     public string Title {
@@ -22,27 +22,27 @@ public class BoopWindow {
     }
 
     public BoopWindow(int width = 1280, int height = 720, string title = "boop!") {
-        var options = WindowOptions.Default;
+        WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(width, height);
         options.Title = title;
         options.VSync = true;
-        
+
         _window = Window.Create(options);
-        
+
         _window.Load += () => _onLoad?.Invoke();
         _window.Update += delta => _onUpdate?.Invoke(delta);
         _window.Render += delta => _onRender?.Invoke(delta);
         _window.Resize += size => _onResize?.Invoke(size);
         _window.Closing += () => _onClose?.Invoke();
     }
-    
+
     public IWindow GetNativeWindow() => _window;
     public void OnLoad(Action callback) => _onLoad = callback;
     public void OnUpdate(Action<double> callback) => _onUpdate = callback;
     public void OnRender(Action<double> callback) => _onRender = callback;
     public void OnResize(Action<Vector2D<int>> callback) => _onResize = callback;
     public void OnClose(Action callback) => _onClose = callback;
-    
+
     public void Run() => _window.Run();
     public void Close() => _window.Close();
 

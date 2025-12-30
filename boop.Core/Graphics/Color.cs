@@ -12,10 +12,10 @@ public readonly struct Color {
         B = b;
         A = a;
     }
-    
+
     public static Color FromRgb(byte r, byte g, byte b) => new(r, g, b);
     public static Color FromRgba(byte r, byte g, byte b, byte a) => new(r, g, b, a);
-    
-    public readonly static Color Black = new(0, 0, 0);
-    public readonly static Color White = new(255, 255, 255);
+
+    public static readonly Color Black = new(0, 0, 0);
+    public static readonly Color White = new(255, 255, 255);
 }

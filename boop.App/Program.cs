@@ -9,7 +9,7 @@ namespace boop.App;
 
 public static class Program {
     public static void Main(string[] args) {
-        var window = new BoopWindow(1280, 720, "boop!");
+        var window = new BoopWindow();
         var inputManager = new InputManager();
         var terminalSession = new TerminalSession();
         var renderer = new SkiaRenderer();
@@ -17,11 +17,11 @@ public static class Program {
 
         window.OnLoad(() => {
             window.MakeCurrent();
-            
+
             renderer.Init(window.Width, window.Height);
             inputManager.Init(window.GetNativeWindow());
             terminalSession.Start();
-            
+
             editor = new Editor(inputManager, inputManager, terminalSession);
         });
 
@@ -30,7 +30,7 @@ public static class Program {
             inputManager.Update(delta);
         });
 
-        window.OnRender(delta => {
+        window.OnRender(_ => {
             renderer.BeginFrame();
             editor.Render(renderer);
             renderer.EndFrame();
@@ -39,7 +39,7 @@ public static class Program {
         window.OnResize(size => {
             renderer.Resize(size.X, size.Y);
         });
-        
+
         window.OnClose(() => {
             renderer.Dispose();
         });

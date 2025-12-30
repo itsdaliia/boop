@@ -11,19 +11,19 @@ namespace boop.Platform;
 public class InputManager : IInputHandler, ITextInput {
     private readonly HashSet<Key> _keysHeld = [];
     private readonly Dictionary<Key, double> _keyTimers = new();
-    private const float RepeatDelay = 0.5f;
-    private const float RepeatRate = 0.05f;
-    
+    private const float _repeatDelay = 0.5f;
+    private const float _repeatRate = 0.05f;
+
     public event Action<Key>? OnKeyDown;
     public event Action<Key>? OnKeyUp;
     public event Action<char>? OnCharTyped;
 
     public void Init(IWindow window) {
-        var input = window.CreateInput();
-        foreach (var k in input.Keyboards) {
+        IInputContext input = window.CreateInput();
+        foreach (IKeyboard k in input.Keyboards) {
             k.KeyDown += (_, key, _) => KeyDown(ConvertKey(key));
-            k.KeyUp += (_, key, _) => KeyUp(ConvertKey(key));            
-            
+            k.KeyUp += (_, key, _) => KeyUp(ConvertKey(key));
+
             k.KeyChar += (_, chr) => {
                 OnCharTyped?.Invoke(chr);
             };
@@ -31,19 +31,23 @@ public class InputManager : IInputHandler, ITextInput {
     }
 
     public void Update(double deltaTime) {
-        foreach (var key in _keysHeld.ToArray()) {
+        foreach (Key key in _keysHeld.ToArray()) {
             _keyTimers[key] += deltaTime;
 
-            if (!(_keyTimers[key] >= RepeatDelay)) continue;
-            
+            if (!(_keyTimers[key] >= _repeatDelay)) {
+                continue;
+            }
+
             ProcessKey(key);
-            _keyTimers[key] -= RepeatRate;
+            _keyTimers[key] -= _repeatRate;
         }
     }
-    
+
     private void KeyDown(Key key) {
-        if (!_keysHeld.Add(key)) return;
-        
+        if (!_keysHeld.Add(key)) {
+            return;
+        }
+
         _keyTimers[key] = 0f;
         ProcessKey(key);
     }
@@ -52,7 +56,7 @@ public class InputManager : IInputHandler, ITextInput {
         _keysHeld.Remove(key);
         _keyTimers.Remove(key);
     }
-    
+
     private void ProcessKey(Key key) {
         OnKeyDown?.Invoke(key);
 
@@ -63,11 +67,12 @@ public class InputManager : IInputHandler, ITextInput {
             _ => null
         };
 
-        if (c.HasValue)
+        if (c.HasValue) {
             OnCharTyped?.Invoke(c.Value);
-    }    
-    
+        }
+    }
+
     private static Key ConvertKey(Silk.NET.Input.Key key) {
-        return Enum.TryParse<Key>(key.ToString(), out var converted) ? converted : Key.Unknown;
+        return Enum.TryParse(key.ToString(), out Key converted) ? converted : Key.Unknown;
     }
 }
