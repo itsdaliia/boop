@@ -1,7 +1,7 @@
 name: Code Quality Review
 
 on: 
-  pull_request_target:
+  pull_request:
     branches: [main]
 
 permissions:
@@ -9,29 +9,18 @@ permissions:
 
 jobs:
   inspect-code:
-    runs-on: self-hosted
-    environment: pr-checks
-    timeout-minutes: 15
-
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:8.0
-      options: >-
-        --cpus="2"
-        --memory="2g"
-        --pids-limit=100
-        --read-only
-        --tmpfs /tmp:size=512m
-        --network none
-        --security-opt=no-new-privileges
-        --cap-drop=ALL
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout PR code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 1
       
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 10.0.x
+
       - name: Restore dependencies
         run: dotnet restore --no-cache
       
