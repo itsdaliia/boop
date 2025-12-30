@@ -34,10 +34,8 @@ public class Editor {
         terminalSession.CommandInterceptor += cmd => {
             if (cmd.StartsWith(":open", StringComparison.OrdinalIgnoreCase)) {
                 string path = cmd.Substring(":open ".Length);
-                if (OpenFile(path)) {
-                    _terminalBuffer.Print($"[boop] opened {path}");
-                }
-
+                OpenFile(path);
+                _terminalBuffer.Print($"[boop] opened {path}");
                 return true;
             }
 
@@ -46,8 +44,6 @@ public class Editor {
                 _currentFilePath = null;
 
                 _lines.Clear();
-                _lines.Add(new StringBuilder());
-
                 _cursorLine = 0;
                 _cursorColumn = 0;
                 return true;
@@ -62,7 +58,9 @@ public class Editor {
     }
 
     public void Update(double deltaTime) {
-        // todo: update logic
+        if (_lines.Count == 0) {
+            _lines.Add(new StringBuilder());
+        }
     }
 
     public void Render(IRenderer renderer) {
@@ -110,7 +108,7 @@ public class Editor {
         }
     }
 
-    private bool OpenFile(string path) {
+    private void OpenFile(string path) {
         _lines.Clear();
         _cursorLine = 0;
         _cursorColumn = 0;
@@ -118,12 +116,15 @@ public class Editor {
         try {
             string[] lines = File.ReadAllLines(path);
             _lines.AddRange(lines.Select(line => new StringBuilder(line)));
-            _currentFilePath = path;
-            return true;
-        } catch (Exception e) {
-            _terminalBuffer.Print("[boop] failed to open file: " + e.Message);
-            return false;
+        } catch (FileNotFoundException) {
+            _terminalBuffer.Print("[boop] file not found, creating new one.");
+            File.Create(path).Close();
+        } catch (Exception ex) {
+            _terminalBuffer.Print("[boop] error opening file: " + ex.Message);
+            return;
         }
+
+        _currentFilePath = path;
     }
 
     private void HandleInput(Key key) {
