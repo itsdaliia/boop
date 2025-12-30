@@ -54,17 +54,36 @@ public class Editor {
     }
 
     public void Render(IRenderer renderer) {
-        // background
         renderer.Clear(new Color(30, 30, 40));
 
         const float x = 100;
+        const float gutterWidth = 40;
         const float lineHeight = 24;
+        const float fontSize = 20f;
         float y = 100;
 
         for (int i = 0; i < _lines.Count; i++) {
-            renderer.DrawText($"{i + 1} {_lines[i]}", x, y, 20, Color.White);
+            renderer.DrawText((i + 1).ToString(), x, y, fontSize, Color.White);
+            renderer.DrawText(_lines[i].ToString(), x + gutterWidth, y, fontSize, Color.White);
             y += lineHeight;
         }
+
+        string beforeCursor = "";
+        if (_cursorLine >= 0 && _cursorLine < _lines.Count && _cursorColumn > 0) {
+            int len = Math.Min(_cursorColumn, _lines[_cursorLine].Length);
+            beforeCursor = _lines[_cursorLine].ToString(0, len);
+        }
+
+        float textWidthBeforeCursor = renderer.MeasureTextWidth(beforeCursor, fontSize);
+        float cursorX = x + gutterWidth + textWidthBeforeCursor;
+
+        renderer.DrawRect(
+            cursorX,
+            80 + _cursorLine * lineHeight,
+            2,
+            lineHeight,
+            Color.White
+        );
 
         if (_terminalVisible) {
             renderer.DrawRect(0, renderer.Height - 300, renderer.Width, 300, new Color(0,0,0,180));
@@ -90,14 +109,36 @@ public class Editor {
     private void HandleInput(Key key) {
         Console.WriteLine("Input: " + key);
 
-        if (key == Key.F5) {
-            _terminalVisible = !_terminalVisible;
-            return;
-        }
-
-        if (key == Key.ControlLeft || key == Key.ControlRight) {
-            _ctrlDown = true;
-            return;
+        switch (key) {
+            case Key.Left:
+                if (_cursorColumn > 0) {
+                    _cursorColumn--;
+                }
+                break;
+            case Key.Right:
+                if (_cursorColumn < _lines[_cursorLine].Length) {
+                    _cursorColumn++;
+                }
+                break;
+            case Key.Up:
+                if (_cursorLine > 0) {
+                    _cursorLine--;
+                    _cursorColumn = Math.Min(_cursorColumn, _lines[_cursorLine].Length);
+                }
+                break;
+            case Key.Down:
+                if (_cursorLine < _lines.Count - 1) {
+                    _cursorLine++;
+                    _cursorColumn = Math.Min(_cursorColumn, _lines[_cursorLine].Length);
+                }
+                break;
+            case Key.F5:
+                _terminalVisible = !_terminalVisible;
+                return;
+            case Key.ControlLeft:
+            case Key.ControlRight:
+                _ctrlDown = true;
+                return;
         }
 
         if (_ctrlDown && key == Key.S) {

@@ -80,6 +80,15 @@ public class SkiaRenderer : IRenderer, IDisposable {
         Canvas.DrawText(text, x, y, font, paint);
     }
 
+    public float MeasureTextWidth(string text, float size) {
+        if (string.IsNullOrEmpty(text)) {
+            return 0f;
+        }
+
+        using var font = new SKFont(SKTypeface.FromFamilyName("Arial"), size);
+        return font.MeasureText(text);
+    }
+
     public void DrawRect(float x, float y, float width, float height, Color color, bool filled = true, int strokeWidth = 2) {
         if (Canvas == null) {
             return;
