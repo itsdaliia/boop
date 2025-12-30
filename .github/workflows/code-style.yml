@@ -1,0 +1,39 @@
+name: Code Quality Review
+
+on: 
+  pull_request_target:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-code:
+    runs-on: self-hosted
+    environment: pr-checks
+    timeout-minutes: 15
+
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+      options: >-
+        --cpus="2"
+        --memory="2g"
+        --pids-limit=100
+        --read-only
+        --tmpfs /tmp:size=512m
+        --network none
+        --security-opt=no-new-privileges
+        --cap-drop=ALL
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+      
+      - name: Restore dependencies
+        run: dotnet restore --no-cache
+      
+      - name: Check code formatting
+        run: dotnet format --verify-no-changes --verbosity diagnostic --no-restore
